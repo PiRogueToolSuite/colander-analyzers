@@ -1,0 +1,58 @@
+import json
+import logging
+
+from colander_analyzers.modules.enrichment import check_input_attribute
+
+module_errors = {'error': 'Error'}
+module_attributes = {'input': ['value', 'reference'], 'type': 'domain'}
+module_info = {'version': '1',
+               'author': 'Esther Onfroy',
+               'description': 'Resolve a domain name',
+               'module-type': ['enrich']}
+module_config = []
+
+log = logging.getLogger('colander-analyzers>dns_resolve')
+
+
+def handler(q=False):
+    if q is False:
+        return False
+    request = json.loads(q)
+    input_data = request.get('input')
+    if not check_input_attribute(input_data, module_attributes.get('input')):
+        return {
+            'error': f'Some input information are missing, please check the module inputs requirements {module_attributes}'}
+
+    results = []
+    target_id = input_data.get('reference')
+
+
+
+    response = {
+        'input': input_data,
+        'results': results
+    }
+    return response
+
+
+def introspection():
+    return module_attributes
+
+
+def version():
+    module_info['config'] = module_config
+    return module_info
+
+
+if __name__ == '__main__':
+    input_data = {
+        "input": {
+            "reference": "990cbd78-f73f-4528-9f58-361ecbd110cd",
+            "obj_type": "observable",
+            "type": "domain",
+            "value": "esther.codes"
+        },
+        "module": "resolve_dns"
+    }
+    response = handler(json.dumps(input_data))
+    print(json.dumps(response))
